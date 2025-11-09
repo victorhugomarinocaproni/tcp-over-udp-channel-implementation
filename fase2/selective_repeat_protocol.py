@@ -10,7 +10,8 @@ import socket
 import threading
 import time
 import sys
-sys.path.append('../..')
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from utils.packet import RDTPacket, PacketType
 from utils.simulator import UnreliableChannel
@@ -20,7 +21,7 @@ from utils.logger import ProtocolLogger
 class SRSender:
     """Remetente Selective Repeat com timers individuais"""
     
-    def __init__(self, port, window_size=5, channel=None, timeout=1.0):
+    def __init__(self, port, window_size = 5, channel = None, timeout = 1.0):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind(('localhost', port))
         self.port = port
@@ -57,7 +58,7 @@ class SRSender:
         self.running = True
         self.start_time = time.time()
         
-        self.ack_thread = threading.Thread(target=self._ack_receive_loop)
+        self.ack_thread = threading.Thread(target = self._ack_receive_loop)
         self.ack_thread.daemon = True
         self.ack_thread.start()
         
@@ -75,7 +76,7 @@ class SRSender:
             time.sleep(0.01)
         
         # Criar pacote
-        packet = RDTPacket(PacketType.DATA, seq_num=self.next_seq_num, data=data)
+        packet = RDTPacket(PacketType.DATA, seq_num = self.next_seq_num, data = data)
         
         with self.lock:
             # Adicionar ao buffer
@@ -266,7 +267,7 @@ class SRReceiver:
     def start(self):
         """Inicia o receptor"""
         self.running = True
-        self.receive_thread = threading.Thread(target=self._receive_loop)
+        self.receive_thread = threading.Thread(target = self._receive_loop)
         self.receive_thread.daemon = True
         self.receive_thread.start()
         self.logger.info(f"Receptor SR iniciado (janela={self.window_size})")
@@ -284,15 +285,14 @@ class SRReceiver:
                     continue
                 
                 self.logger.receive(f"{packet}")
-                
-                # Verificar corrupção
+
                 if packet.is_corrupt():
                     self.logger.corrupt(f"{packet}")
                     self.corrupted_packets += 1
                     continue
                 
                 seq_num = packet.seq_num
-                
+
                 # Verificar se está dentro da janela
                 if self.rcv_base <= seq_num < self.rcv_base + self.window_size:
                     # Dentro da janela - enviar ACK individual
@@ -336,7 +336,7 @@ class SRReceiver:
     
     def _send_ack(self, dest_addr, seq_num):
         """Envia ACK individual para um pacote específico"""
-        ack_packet = RDTPacket(PacketType.ACK, seq_num=seq_num)
+        ack_packet = RDTPacket(PacketType.ACK, seq_num = seq_num)
         self.logger.send(f"{ack_packet} - ACK individual")
         
         packet_bytes = ack_packet.serialize()
@@ -386,10 +386,10 @@ if __name__ == "__main__":
     )
     
     # Criar receptor e remetente
-    receiver = SRReceiver(8001, window_size=8, channel=channel)
+    receiver = SRReceiver(8001, window_size = 8, channel = channel)
     receiver.start()
     
-    sender = SRSender(8000, window_size=8, channel=channel, timeout=1.0)
+    sender = SRSender(8000, window_size = 8, channel = channel, timeout = 1.0)
     sender.start(('localhost', 8001))
     
     # Enviar dados
@@ -404,7 +404,7 @@ if __name__ == "__main__":
     
     # Aguardar conclusão
     print("Aguardando confirmação...")
-    success = sender.wait_for_completion(timeout=15.0)
+    success = sender.wait_for_completion(timeout = 15.0)
     
     time.sleep(1)
     

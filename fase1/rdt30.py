@@ -18,9 +18,9 @@ from utils.logger import ProtocolLogger
 
 
 class RDT30Sender:
-    """Remetente do protocolo rdt3.0 com timer"""
+    """Remetente do protocolo rdt3.0 com timer (utiliza estratégias de timeout)"""
     
-    def __init__(self, port, channel=None, timeout=2.0):
+    def __init__(self, port, channel = None, timeout =2.0):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind(('localhost', port))
         self.port = port
@@ -61,8 +61,8 @@ class RDT30Sender:
         self.total_bytes_sent += len(data)
         
         # Criar pacote
-        packet = RDTPacket(PacketType.DATA, seq_num=self.seq_num, data=data)
-        
+        packet = RDTPacket(PacketType.DATA, seq_num = self.seq_num, data = data)
+
         if self.start_time is None:
             self.start_time = time.time()
         
@@ -196,7 +196,7 @@ class RDT30Sender:
 class RDT30Receiver:
     """Receptor do protocolo rdt3.0"""
     
-    def __init__(self, port, channel=None):
+    def __init__(self, port, channel = None):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind(('localhost', port))
         self.port = port
@@ -224,7 +224,7 @@ class RDT30Receiver:
     def start(self):
         """Inicia o receptor"""
         self.running = True
-        self.receive_thread = threading.Thread(target=self._receive_loop)
+        self.receive_thread = threading.Thread(target = self._receive_loop)
         self.receive_thread.daemon = True
         self.receive_thread.start()
         self.logger.info(f"Receptor iniciado na porta {self.port}")
@@ -274,7 +274,7 @@ class RDT30Receiver:
     
     def _send_ack(self, dest_addr, seq_num):
         """Envia ACK"""
-        ack_packet = RDTPacket(PacketType.ACK, seq_num=seq_num)
+        ack_packet = RDTPacket(PacketType.ACK, seq_num = seq_num)
         self.logger.send(f"{ack_packet}")
         
         packet_bytes = ack_packet.serialize()
@@ -325,7 +325,7 @@ if __name__ == "__main__":
     receiver = RDT30Receiver(5021, channel)
     receiver.start()
     
-    sender = RDT30Sender(5020, channel, timeout=2.0)
+    sender = RDT30Sender(5020, channel, timeout = 2.0)
     
     # Enviar mensagens
     messages = [f"Mensagem número {i}" for i in range(20)]
