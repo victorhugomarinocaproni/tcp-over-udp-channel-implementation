@@ -87,15 +87,12 @@ class RDT21Sender:
                     continue
 
             elif response.type == PacketType.NAK:
-                # NAK recebido - verificar se é com o número de sequência correto
+                self.naks_received += 1
                 if response.seq_num == self.seq_num:
-                    # NAK correto - o receptor pediu retransmissão
                     self.logger.receive(f"{response} - Retransmissão solicitada (NAK Seq{response.seq_num})")
-                    self.naks_received += 1
                     self.retransmissions += 1
                     continue
                 else:
-                    # NAK duplicado (número de sequência incorreto) - ignorar
                     self.logger.receive(f"{response} - NAK duplicado, ignorando")
                     continue
 
@@ -204,13 +201,13 @@ class RDT21Receiver:
                     self.last_ack_sent = self.expected_seq_num
                     self.expected_seq_num = 1 - self.expected_seq_num
                 else:
-                    # Pacote duplicado - enviar NAK com o último ACK válido
+                    # Pacote duplicado - reenviar ACK do último pacote válido
                     self.logger.warning(
                         f"{packet} - Duplicado! Esperava Seq. Num.: {self.expected_seq_num}, "
-                        f"enviando NAK{self.last_ack_sent}"
+                        f"reenviando ACK{self.last_ack_sent}"
                     )
                     self.duplicated_packets += 1
-                    self._send_nak(sender_addr, self.last_ack_sent)
+                    self._send_ack(sender_addr, self.last_ack_sent)
 
             except Exception as e:
                 if self.running:
