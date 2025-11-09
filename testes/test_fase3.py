@@ -4,7 +4,8 @@ Testes automatizados para Fase 3: TCP Simplificado sobre UDP
 import sys
 import time
 import threading
-sys.path.append('../..')
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from fase3.tcp_socket import SimpleTCPSocket
 from utils.simulator import UnreliableChannel

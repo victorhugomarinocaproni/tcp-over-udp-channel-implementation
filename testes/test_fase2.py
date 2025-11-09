@@ -1,60 +1,15 @@
 """
-Testes automatizados para Fase 2: Pipelining (Go-Back-N e Selective Repeat)
+Testes automatizados para Fase 2: Pipelining (Selective Repeat)
 Inclui comparações de desempenho e gráficos
 """
 import sys
 import time
 import matplotlib.pyplot as plt
-sys.path.append('../..')
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from fase1.rdt30 import RDT30Sender, RDT30Receiver
-from fase2.gbn import GBNSender, GBNReceiver
-from fase2.sr import SRSender, SRReceiver
+from fase2.selective_repeat_protocol import SRSender, SRReceiver
 from utils.simulator import UnreliableChannel
-
-
-def test_gbn_basic():
-    """Teste básico do Go-Back-N"""
-    print("\n" + "=" * 70)
-    print("TESTE 1: Go-Back-N - Funcionalidade Básica")
-    print("=" * 70)
-    
-    channel = UnreliableChannel(loss_rate=0.10, corrupt_rate=0.05, 
-                                delay_range=(0.01, 0.1))
-    
-    receiver = GBNReceiver(9001, channel)
-    receiver.start()
-    
-    sender = GBNSender(9000, window_size=5, channel=channel, timeout=1.0)
-    sender.start(('localhost', 9001))
-    
-    # Enviar mensagens
-    messages = [f"Mensagem {i}" for i in range(30)]
-    
-    print(f"\nEnviando {len(messages)} mensagens (janela=5)...")
-    
-    for msg in messages:
-        sender.send(msg)
-        time.sleep(0.02)
-    
-    sender.wait_for_completion(timeout=10.0)
-    time.sleep(1)
-    
-    # Verificar resultados
-    received = receiver.get_messages()
-    stats_sender = sender.get_statistics()
-    stats_receiver = receiver.get_statistics()
-    
-    print(f"\n✓ Recebidas: {len(received)}/{len(messages)}")
-    print(f"  Retransmissões: {stats_sender['retransmissions']}")
-    print(f"  Throughput: {stats_sender['throughput_bps']:.2f} bytes/s")
-    
-    channel.print_statistics()
-    
-    sender.stop()
-    receiver.stop()
-    
-    return len(received) == len(messages)
 
 
 def test_sr_buffering():
@@ -63,8 +18,11 @@ def test_sr_buffering():
     print("TESTE 2: Selective Repeat - Bufferização de Pacotes Fora de Ordem")
     print("=" * 70)
     
-    channel = UnreliableChannel(loss_rate=0.15, corrupt_rate=0.05,
-                                delay_range=(0.01, 0.15))
+    channel = UnreliableChannel(
+        loss_rate = 0.15,
+        corrupt_rate = 0.05,
+        delay_range = (0.01, 0.15)
+    )
     
     receiver = SRReceiver(9011, window_size=8, channel=channel)
     receiver.start()
@@ -105,7 +63,7 @@ def test_sr_buffering():
 def test_throughput_vs_window_size():
     """
     Teste comparativo: Throughput vs Tamanho da Janela
-    Compara rdt3.0, GBN e SR com diferentes tamanhos de janela
+    Compara rdt3.0 e SR com diferentes tamanhos de janela
     """
     print("\n" + "=" * 70)
     print("TESTE 3: Análise de Desempenho - Throughput vs Tamanho da Janela")
@@ -120,54 +78,23 @@ def test_throughput_vs_window_size():
     
     results = {
         'window_sizes': window_sizes,
-        'gbn_throughput': [],
         'sr_throughput': [],
-        'gbn_time': [],
         'sr_time': [],
-        'gbn_retrans': [],
         'sr_retrans': []
     }
     
     # Teste com diferentes tamanhos de janela
     for window_size in window_sizes:
         print(f"\n--- Testando com janela = {window_size} ---")
-        
-        # Teste GBN
-        print(f"  GBN (janela={window_size})...")
-        channel = UnreliableChannel(loss_rate=loss_rate, corrupt_rate=corrupt_rate,
-                                    delay_range=(0.01, 0.05))
-        
-        receiver_gbn = GBNReceiver(9021, channel)
-        receiver_gbn.start()
-        
-        sender_gbn = GBNSender(9020, window_size=window_size, channel=channel, timeout=0.5)
-        sender_gbn.start(('localhost', 9021))
-        
         messages = [f"Packet{i:03d}" for i in range(num_packets)]
-        
-        for msg in messages:
-            sender_gbn.send(msg)
-            time.sleep(0.005)
-        
-        sender_gbn.wait_for_completion(timeout=20.0)
-        time.sleep(0.5)
-        
-        stats_gbn = sender_gbn.get_statistics()
-        results['gbn_throughput'].append(stats_gbn['throughput_bps'])
-        results['gbn_time'].append(stats_gbn['elapsed_time'])
-        results['gbn_retrans'].append(stats_gbn['retransmissions'])
-        
-        print(f"    Throughput: {stats_gbn['throughput_bps']:.2f} bytes/s")
-        print(f"    Tempo: {stats_gbn['elapsed_time']:.2f}s")
-        
-        sender_gbn.stop()
-        receiver_gbn.stop()
-        time.sleep(0.5)
         
         # Teste SR
         print(f"  SR (janela={window_size})...")
-        channel = UnreliableChannel(loss_rate=loss_rate, corrupt_rate=corrupt_rate,
-                                    delay_range=(0.01, 0.05))
+        channel = UnreliableChannel(
+            loss_rate = loss_rate,
+            corrupt_rate = corrupt_rate,
+            delay_range = (0.01, 0.05)
+        )
         
         receiver_sr = SRReceiver(9031, window_size=window_size, channel=channel)
         receiver_sr.start()
@@ -213,8 +140,6 @@ def plot_performance_comparison(results):
     
     # Gráfico 1: Throughput vs Tamanho da Janela
     ax1 = axes[0, 0]
-    ax1.plot(results['window_sizes'], results['gbn_throughput'], 
-             marker='o', linewidth=2, label='Go-Back-N', color='blue')
     ax1.plot(results['window_sizes'], results['sr_throughput'], 
              marker='s', linewidth=2, label='Selective Repeat', color='green')
     ax1.set_xlabel('Tamanho da Janela (N)', fontsize=12)
@@ -225,8 +150,6 @@ def plot_performance_comparison(results):
     
     # Gráfico 2: Tempo Total vs Tamanho da Janela
     ax2 = axes[0, 1]
-    ax2.plot(results['window_sizes'], results['gbn_time'], 
-             marker='o', linewidth=2, label='Go-Back-N', color='blue')
     ax2.plot(results['window_sizes'], results['sr_time'], 
              marker='s', linewidth=2, label='Selective Repeat', color='green')
     ax2.set_xlabel('Tamanho da Janela (N)', fontsize=12)
@@ -237,8 +160,6 @@ def plot_performance_comparison(results):
     
     # Gráfico 3: Retransmissões vs Tamanho da Janela
     ax3 = axes[1, 0]
-    ax3.bar([x - 0.2 for x in results['window_sizes']], results['gbn_retrans'], 
-            width=0.4, label='Go-Back-N', color='blue', alpha=0.7)
     ax3.bar([x + 0.2 for x in results['window_sizes']], results['sr_retrans'], 
             width=0.4, label='Selective Repeat', color='green', alpha=0.7)
     ax3.set_xlabel('Tamanho da Janela (N)', fontsize=12)
@@ -249,13 +170,8 @@ def plot_performance_comparison(results):
     
     # Gráfico 4: Speedup em relação a Window=1
     ax4 = axes[1, 1]
-    gbn_speedup = [results['gbn_throughput'][i] / results['gbn_throughput'][0] 
-                   for i in range(len(results['window_sizes']))]
     sr_speedup = [results['sr_throughput'][i] / results['sr_throughput'][0] 
                   for i in range(len(results['window_sizes']))]
-    
-    ax4.plot(results['window_sizes'], gbn_speedup, 
-             marker='o', linewidth=2, label='Go-Back-N', color='blue')
     ax4.plot(results['window_sizes'], sr_speedup, 
              marker='s', linewidth=2, label='Selective Repeat', color='green')
     ax4.set_xlabel('Tamanho da Janela (N)', fontsize=12)
@@ -284,34 +200,12 @@ def test_transfer_1mb():
     print(f"\nTransferindo {len(data_1mb)} bytes em {len(chunks)} pacotes...")
     
     # Canal com perda
-    channel = UnreliableChannel(loss_rate=0.10, corrupt_rate=0.05,
-                                delay_range=(0.005, 0.02))
-    
-    # Teste com GBN
-    print("\n[1] Go-Back-N (janela=10)...")
-    receiver_gbn = GBNReceiver(9041, channel)
-    receiver_gbn.start()
-    
-    sender_gbn = GBNSender(9040, window_size=10, channel=channel, timeout=0.5)
-    sender_gbn.start(('localhost', 9041))
-    
-    start_gbn = time.time()
-    for chunk in chunks:
-        sender_gbn.send(chunk)
-    sender_gbn.wait_for_completion(timeout=60.0)
-    time_gbn = time.time() - start_gbn
-    
-    stats_gbn = sender_gbn.get_statistics()
-    
-    print(f"  Tempo: {time_gbn:.2f}s")
-    print(f"  Throughput: {stats_gbn['throughput_bps']/1024:.2f} KB/s")
-    print(f"  Retransmissões: {stats_gbn['retransmissions']}")
-    
-    sender_gbn.stop()
-    receiver_gbn.stop()
-    
-    time.sleep(1)
-    
+    channel = UnreliableChannel(
+        loss_rate = 0.10,
+        corrupt_rate = 0.05,
+        delay_range = (0.005, 0.02)
+    )
+
     # Teste com SR
     channel.reset_statistics()
     
@@ -337,17 +231,6 @@ def test_transfer_1mb():
     sender_sr.stop()
     receiver_sr.stop()
     
-    # Comparação
-    print("\n" + "=" * 70)
-    print("COMPARAÇÃO")
-    print("=" * 70)
-    print(f"GBN:  {time_gbn:.2f}s | {stats_gbn['throughput_bps']/1024:.2f} KB/s | {stats_gbn['retransmissions']} retrans")
-    print(f"SR:   {time_sr:.2f}s | {stats_sr['throughput_bps']/1024:.2f} KB/s | {stats_sr['retransmissions']} retrans")
-    
-    if time_sr < time_gbn:
-        improvement = ((time_gbn - time_sr) / time_gbn) * 100
-        print(f"\n✓ SR foi {improvement:.1f}% mais rápido que GBN")
-    
     return True
 
 
@@ -359,10 +242,6 @@ def run_all_tests():
     print("=" * 70)
     
     results = []
-    
-    # Teste 1: GBN básico
-    results.append(("GBN Básico", test_gbn_basic()))
-    time.sleep(1)
     
     # Teste 2: SR com bufferização
     results.append(("SR Bufferização", test_sr_buffering()))

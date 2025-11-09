@@ -27,14 +27,14 @@ def run_client(server_address, data_to_send=None, use_channel=False):
     channel = None
     if use_channel:
         channel = UnreliableChannel(
-            loss_rate=0.05,
-            corrupt_rate=0.02,
-            delay_range=(0.01, 0.05)
+            loss_rate = 0.05,
+            corrupt_rate = 0.02,
+            delay_range = (0.01, 0.05)
         )
         print("\n⚠️  Usando canal não confiável (5% perda, 2% corrupção)")
     
     # Criar socket cliente
-    client = SimpleTCPSocket(9000, channel=channel)
+    client = SimpleTCPSocket(9000, channel = channel)
     
     print(f"\n[1] Cliente iniciado na porta {client.port}")
     
@@ -79,7 +79,7 @@ def run_client(server_address, data_to_send=None, use_channel=False):
         # Receber resposta do servidor
         print("\n[6] Aguardando resposta do servidor...")
         
-        response = client.recv(buffer_size=4096)
+        response = client.recv(buffer_size = 4096)
         
         if response:
             print(f"[7] Resposta recebida: {response.decode()}")

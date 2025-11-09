@@ -3,7 +3,8 @@ Testes automatizados para Fase 1: Protocolos RDT
 """
 import sys
 import time
-sys.path.append('../..')
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from fase1.rdt20 import RDT20Sender, RDT20Receiver
 from fase1.rdt21 import RDT21Sender, RDT21Receiver

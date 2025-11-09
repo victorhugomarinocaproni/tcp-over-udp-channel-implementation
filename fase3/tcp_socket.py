@@ -12,7 +12,8 @@ import threading
 import time
 import random
 import sys
-sys.path.append('../..')
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from utils.packet import TCPSegment
 from utils.logger import ProtocolLogger
