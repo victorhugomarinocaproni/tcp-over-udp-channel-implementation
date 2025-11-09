@@ -13,7 +13,6 @@ projeto_redes/
 │   └── rdt30.py           # Com timer e perda de pacotes
 │
 ├── fase2/                  # Pipelining
-│   ├── gbn.py             # Go-Back-N
 │   └── sr.py              # Selective Repeat
 │
 ├── fase3/                  # TCP Simplificado
@@ -37,7 +36,7 @@ projeto_redes/
 ## 🎯 Objetivos do Projeto
 
 1. **Fase 1**: Implementar protocolos RDT progressivos (rdt2.0 → rdt2.1 → rdt3.0)
-2. **Fase 2**: Adicionar pipelining (Go-Back-N ou Selective Repeat)
+2. **Fase 2**: Adicionar pipelining (Selective Repeat)
 3. **Fase 3**: Construir TCP simplificado sobre UDP
 
 ## 🚀 Como Executar
@@ -47,6 +46,26 @@ projeto_redes/
 ```bash
 Python 3.8+
 Bibliotecas: socket, threading, struct, time, hashlib, random, matplotlib
+```
+
+### Instalar Dependências
+Para não poluir sua máquina, primeiro inicie um ambiente virtual do python (venv) com o comando:
+```bash
+python -m venv venv 
+```
+
+Depois, acesse o venv com o comando:
+```bash
+# Para Windows:
+venv\Scripts\activate
+
+# Para Linux/Mac:
+source venv/bin/activate
+```
+
+Depois, com o terminal dentro do venv, instale as dependências necessárias com o comando:
+```bash
+pip install -r requirements.txt
 ```
 
 ### Executar Testes Individuais
@@ -88,6 +107,7 @@ python test_fase1.py
 - Detecção de corrupção com checksum MD5
 - Retransmissão ao receber NAK
 - Ainda não há alternância de Números de sequência (0 e 1) para lidar com ACKs e NAKs corrompidos
+- Ainda não condiera perda de pacotes na rede
 
 **Como funciona:**
 1. Remetente envia pacote DATA
@@ -106,6 +126,7 @@ python test_fase1.py
 - Números de sequência alternantes (0 e 1)
 - Detecta e descarta pacotes duplicados
 - Lida com ACKs/NAKs corrompidos
+- Ainda não condiera perda de pacotes na rede
 
 **Como funciona:**
 1. Remetente alterna seq_num: 0 → 1 → 0 → 1...
