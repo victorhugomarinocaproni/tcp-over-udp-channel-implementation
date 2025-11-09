@@ -9,7 +9,8 @@ import socket
 import threading
 import time
 import sys
-sys.path.append('../..')
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from utils.packet import RDTPacket, PacketType
 from utils.simulator import UnreliableChannel
@@ -19,7 +20,7 @@ from utils.logger import ProtocolLogger
 class RDT20Sender:
     """Remetente do protocolo rdt2.0"""
     
-    def __init__(self, port, channel=None):
+    def __init__(self, port, channel = None):
         """
         Inicializa o Remetente (Sender)
         

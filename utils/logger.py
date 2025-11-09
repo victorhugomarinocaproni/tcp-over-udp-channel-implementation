@@ -26,8 +26,8 @@ class ProtocolLogger:
         
         # Formato do log
         formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            datefmt='%H:%M:%S.%f'
+            '[%(asctime)s] %(name)s %(levelname)s: %(message)s',
+            datefmt = '%Y-%m-%d %H:%M:%S'
         )
         
         # Handler para console
