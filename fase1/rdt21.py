@@ -255,6 +255,7 @@ class RDT21Receiver:
             'corrupted_packets': self.corrupted_packets,
             'duplicated_packets': self.duplicated_packets,
             'acks_sent': self.acks_sent,
+            'naks_sent': self.naks_sent,
             'messages_delivered': len(self.received_messages)
         }
     
